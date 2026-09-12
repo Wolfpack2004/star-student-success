@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Star Student Success | Robert Lane, Master Teacher</title>
+<style>
+  :root {
+    --red: #c0392b;
+    --red-dark: #9c2c20;
+    --red-light: #e74c3c;
+    --ink: #2b2b2b;
+    --muted: #6b6b6b;
+    --paper: #ffffff;
+    --cream: #faf7f5;
+    --border: #ecdedb;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.6;
+  }
+  a { color: inherit; }
+  .wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  header {
+    background: var(--paper);
+    border-bottom: 4px solid var(--red);
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 0;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .stars-badge {
+    width: 54px;
+    height: 54px;
+    flex-shrink: 0;
+  }
+  .brand-text .name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--red);
+    letter-spacing: 0.3px;
+  }
+  .brand-text .role {
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  nav a {
+    text-decoration: none;
+    color: var(--ink);
+    margin-left: 22px;
+    font-size: 0.95rem;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  nav a:hover { color: var(--red); }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, var(--cream) 0%, #fff 60%);
+    padding: 64px 0 56px;
+    text-align: center;
+    position: relative;
+  }
+  .hero .stars-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+  .hero .stars-row svg { width: 20px; height: 20px; }
+  .hero h1 {
+    font-size: 2.4rem;
+    margin: 0 0 8px;
+    color: var(--ink);
+  }
+  .hero .tagline {
+    font-size: 1.3rem;
+    color: var(--red);
+    font-style: italic;
+    margin: 0 0 22px;
+  }
+  .hero p.lead {
+    max-width: 620px;
+    margin: 0 auto 28px;
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+  .cta-row {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-block;
+    font-family: Arial, Helvetica, sans-serif;
+    text-decoration: none;
+    padding: 13px 28px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-primary {
+    background: var(--red);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(192, 57, 43, 0.3);
+  }
+  .btn-primary:hover { background: var(--red-dark); }
+  .btn-outline {
+    background: transparent;
+    color: var(--red);
+    border: 2px solid var(--red);
+  }
+  .btn-outline:hover { background: var(--red); color: #fff; }
+
+  /* Ribbon section title */
+  .section-title {
+    background: var(--red);
+    color: #fff;
+    text-align: center;
+    padding: 14px 0;
+    font-size: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    margin: 0;
+  }
+
+  /* Services */
+  .services {
+    padding: 48px 0 56px;
+    background: var(--cream);
+  }
+  .services-intro {
+    text-align: center;
+    color: var(--muted);
+    font-style: italic;
+    max-width: 560px;
+    margin: 0 auto 36px;
+  }
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px;
+  }
+  @media (max-width: 640px) {
+    .services-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 1.9rem; }
+    .header-inner { justify-content: center; text-align: center; }
+    nav { width: 100%; text-align: center; }
+    nav a { margin: 0 10px; }
+  }
+  .service-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--red);
+    border-radius: 6px;
+    padding: 22px 24px;
+  }
+  .service-card h3 {
+    margin: 0 0 6px;
+    font-size: 1.15rem;
+    color: var(--red-dark);
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  .service-card ul {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--ink);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.98rem;
+  }
+  .service-card li { margin-bottom: 6px; }
+
+  /* About */
+  .about {
+    padding: 56px 0;
+    text-align: center;
+  }
+  .about .stars-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+  .about .stars-row svg { width: 18px; height: 18px; }
+  .about h2 {
+    font-size: 1.8rem;
+    margin: 0 0 6px;
+    color: var(--ink);
+  }
+  .about .role-line {
+    color: var(--red);
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    margin-bottom: 18px;
+  }
+  .about p {
+    max-width: 640px;
+    margin: 0 auto 14px;
+    color: var(--muted);
+  }
+
+  /* Contact */
+  .contact {
+    background: var(--ink);
+    color: #f4f4f4;
+    padding: 52px 0;
+    text-align: center;
+  }
+  .contact h2 {
+    color: #fff;
+    margin: 0 0 8px;
+    font-size: 1.7rem;
+  }
+  .contact .sub {
+    color: #cfcfcf;
+    font-style: italic;
+    margin-bottom: 30px;
+  }
+  .contact-cards {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  .contact-card {
+    background: #383430;
+    border-radius: 8px;
+    padding: 22px 30px;
+    min-width: 220px;
+  }
+  .contact-card .label {
+    color: var(--red-light);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .contact-card a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.05rem;
+  }
+  .contact-card a:hover { color: var(--red-light); }
+
+  footer {
+    background: #1c1c1c;
+    color: #999;
+    text-align: center;
+    padding: 20px 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap header-inner">
+    <div class="brand">
+      <svg class="stars-badge" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="50" cy="50" r="48" fill="none"/>
+        <g fill="#c0392b">
+          <!-- 8 stars arranged in a ring, matching the card's badge -->
+          <g id="star-template">
+            <polygon points="0,-9 2.1,-2.8 8.6,-2.8 3.4,1.1 5.3,7.3 0,3.4 -5.3,7.3 -3.4,1.1 -8.6,-2.8 -2.1,-2.8"/>
+          </g>
+          <use href="#star-template" transform="translate(50,10)"/>
+          <use href="#star-template" transform="translate(78,26)"/>
+          <use href="#star-template" transform="translate(88,55)"/>
+          <use href="#star-template" transform="translate(72,80)"/>
+          <use href="#star-template" transform="translate(44,90)"/>
+          <use href="#star-template" transform="translate(16,80)"/>
+          <use href="#star-template" transform="translate(6,52)"/>
+          <use href="#star-template" transform="translate(20,24)"/>
+        </g>
+      </svg>
+      <div class="brand-text">
+        <div class="name">Star Student Success</div>
+        <div class="role">Personal GED Training &amp; Tutoring Services</div>
+      </div>
+    </div>
+    <nav>
+      <a href="#services">Services</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="stars-row" aria-hidden="true">
+      <svg viewBox="0 0 20 20"><polygon points="10,0 12.4,6.5 19,6.5 13.7,10.5 15.8,17 10,13 4.2,17 6.3,10.5 1,6.5 7.6,6.5" fill="#c0392b"/></svg>
+      <svg viewBox="0 0 20 20"><polygon points="10,0 12.4,6.5 19,6.5 13.7,10.5 15.8,17 10,13 4.2,17 6.3,10.5 1,6.5 7.6,6.5" fill="#c0392b"/></svg>
+      <svg viewBox="0 0 20 20"><polygon points="10,0 12.4,6.5 19,6.5 13.7,10.5 15.8,17 10,13 4.2,17 6.3,10.5 1,6.5 7.6,6.5" fill="#c0392b"/></svg>
+    </div>
+    <h1>Robert Lane, Master Teacher</h1>
+    <p class="tagline">&ldquo;See The Light&rdquo;</p>
+    <p class="lead">
+      One-on-one tutoring, GED preparation, and language coaching tailored to
+      help every student reach their goals &mdash; at their own pace, on their own terms.
+    </p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="mailto:roblaneii@sbcglobal.net">Email Robert</a>
+      <a class="btn btn-outline" href="tel:4696576671">Call 469-657-6671</a>
+    </div>
+  </div>
+</section>
+
+<h2 class="section-title" id="services">Star Student Success</h2>
+<section class="services">
+  <div class="wrap">
+    <p class="services-intro">Personal GED Training &amp; Tutoring Services</p>
+    <div class="services-grid">
+      <div class="service-card">
+        <h3>Academic Tutoring</h3>
+        <ul>
+          <li>Math to Algebra 1</li>
+          <li>English Mastery</li>
+          <li>Test Preparedness</li>
+        </ul>
+      </div>
+      <div class="service-card">
+        <h3>Language &amp; Citizenship</h3>
+        <ul>
+          <li>Conversational Spanish</li>
+          <li>English Language Skills</li>
+          <li>U.S. Citizenship Coaching</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="wrap">
+    <div class="stars-row" aria-hidden="true">
+      <svg viewBox="0 0 20 20"><polygon points="10,0 12.4,6.5 19,6.5 13.7,10.5 15.8,17 10,13 4.2,17 6.3,10.5 1,6.5 7.6,6.5" fill="#c0392b"/></svg>
+      <svg viewBox="0 0 20 20"><polygon points="10,0 12.4,6.5 19,6.5 13.7,10.5 15.8,17 10,13 4.2,17 6.3,10.5 1,6.5 7.6,6.5" fill="#c0392b"/></svg>
+      <svg viewBox="0 0 20 20"><polygon points="10,0 12.4,6.5 19,6.5 13.7,10.5 15.8,17 10,13 4.2,17 6.3,10.5 1,6.5 7.6,6.5" fill="#c0392b"/></svg>
+    </div>
+    <h2>About Robert Lane</h2>
+    <div class="role-line">Master Teacher</div>
+    <p>
+      Robert brings personalized, patient instruction to every session &mdash;
+      whether you're working toward a GED, building core math and English
+      skills, preparing for a test, learning conversational Spanish, or
+      studying for the U.S. citizenship exam.
+    </p>
+    <p>Every lesson is built around one student, one goal, and one guiding idea: see the light.</p>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="wrap">
+    <h2>Get In Touch</h2>
+    <p class="sub">Ready to start? Reach out to schedule your first session.</p>
+    <div class="contact-cards">
+      <div class="contact-card">
+        <div class="label">Email</div>
+        <a href="mailto:roblaneii@sbcglobal.net">roblaneii@sbcglobal.net</a>
+      </div>
+      <div class="contact-card">
+        <div class="label">Phone</div>
+        <a href="tel:4696576671">469-657-6671</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  &copy; 2026 Star Student Success &mdash; Robert Lane, Master Teacher. &ldquo;See The Light&rdquo;
+</footer>
+
+</body>
+</html>
