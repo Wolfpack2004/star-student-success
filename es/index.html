@@ -606,6 +606,7 @@ tbody tr:nth-child(even){background:var(--paper-2)}
         <div class="field"><label for="q-email">Correo o teléfono</label><input type="text" id="q-email" placeholder="¿Cómo puedo contactarte?"></div>
         <div class="field"><label for="q-msg">¿En qué quieres trabajar?</label><textarea id="q-msg" placeholder="Con una o dos oraciones basta."></textarea></div>
         <button class="btn btn--red" type="button" id="send-question-btn">Enviar el mensaje</button>
+        <p id="question-status" style="font-size:13.5px;margin:12px 0 0" hidden></p>
       </div>
     </div>
   </div>
@@ -685,7 +686,8 @@ tbody tr:nth-child(even){background:var(--paper-2)}
               <div class="summary__row"><span>Formato</span><span id="sum-format">En persona</span></div>
               <div class="summary__row"><span>Costo</span><span class="unset" id="sum-cost">&mdash;</span></div>
               <button class="btn btn--red" type="button" id="confirm-btn" style="width:100%;margin-top:20px" disabled>Enviar solicitud de reserva</button>
-              <p style="font-size:13.5px;color:#A2ABB2;margin:14px 0 0">No se requiere pago ahora. Esto abrirá un correo a Robert con tu solicitud &mdash; él te llamará o enviará un mensaje para confirmar el horario.</p>
+              <p style="font-size:13.5px;color:#A2ABB2;margin:14px 0 0">No se requiere pago ahora. Esto envía tu solicitud directamente a Robert &mdash; él te llamará o enviará un mensaje para confirmar el horario.</p>
+              <p id="booking-error" style="font-size:13.5px;color:#ffb4b4;margin:10px 0 0" hidden>Hubo un problema al enviar la solicitud. Llama o envía un mensaje de texto al 469-657-6671, o inténtalo de nuevo.</p>
             </div>
           </aside>
         </div>
@@ -704,7 +706,7 @@ tbody tr:nth-child(even){background:var(--paper-2)}
         </svg>
         <h3>Solicitud enviada.</h3>
         <p class="lede" style="margin:0 auto 6px" id="done-line">Los detalles de la sesión están en camino.</p>
-        <p class="muted" style="margin-bottom:24px">Tu aplicación de correo debería haberse abierto con la solicitud para Robert. Si no fue así, llama o envía un mensaje de texto al 469-657-6671 con los mismos detalles.</p>
+        <p class="muted" style="margin-bottom:24px">Tu solicitud ha sido enviada a Robert. Él te llamará o enviará un mensaje de texto para confirmar el horario. Si no tienes noticias en un día, llama o envía un mensaje de texto al 469-657-6671.</p>
         <button class="btn btn--ghost" type="button" id="book-again">Reservar otra sesión</button>
       </div>
     </div>
@@ -919,42 +921,54 @@ tbody tr:nth-child(even){background:var(--paper-2)}
   var bookingForm = document.getElementById('booking-form');
   var bookingDone = document.getElementById('booking-done');
 
+  var FORMSPREE_ENDPOINT = 'https://formspree.io/f/xwlkdegp';
+
   if(confirmBtn && bookingForm && bookingDone){
     confirmBtn.addEventListener('click', function(){
-      var line = document.getElementById('done-line');
-      var summary = state.subject + ' — ' + state.day + ' a las ' + state.time + ' — ' + state.format + '.';
-      if(line){
-        line.textContent = summary;
-      }
-
+      var errorEl = document.getElementById('booking-error');
       var name = (document.getElementById('b-name') || {}).value || '';
       var phone = (document.getElementById('b-phone') || {}).value || '';
       var email = (document.getElementById('b-email') || {}).value || '';
       var lang = (document.getElementById('b-lang') || {}).value || '';
       var goal = (document.getElementById('b-goal') || {}).value || '';
 
-      var bodyLines = [
-        'Solicitud de reserva desde el sitio web:',
-        '',
-        'Materia: ' + state.subject,
-        'Día: ' + state.day,
-        'Hora: ' + state.time,
-        'Formato: ' + state.format,
-        '',
-        'Nombre: ' + name,
-        'Teléfono: ' + phone,
-        'Correo: ' + email,
-        'Idioma preferido: ' + lang,
-        'Meta: ' + goal
-      ];
-      var mailto = 'mailto:roblaneii@sbcglobal.net'
-        + '?subject=' + encodeURIComponent('Solicitud de reserva: ' + state.subject + ' — ' + state.day)
-        + '&body=' + encodeURIComponent(bodyLines.join('\n'));
-      window.location.href = mailto;
+      var payload = {
+        _subject: 'Solicitud de reserva: ' + state.subject + ' — ' + state.day,
+        form: 'Solicitud de reserva',
+        subject: state.subject,
+        day: state.day,
+        time: state.time,
+        format: state.format,
+        name: name,
+        phone: phone,
+        email: email,
+        preferred_language: lang,
+        goal: goal
+      };
 
-      bookingForm.hidden = true;
-      bookingDone.hidden = false;
-      window.scrollTo(0, 0);
+      if(errorEl) errorEl.hidden = true;
+      confirmBtn.disabled = true;
+      var originalLabel = confirmBtn.textContent;
+      confirmBtn.textContent = 'Enviando…';
+
+      fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function(resp){
+        if(!resp.ok) throw new Error('bad status');
+        var line = document.getElementById('done-line');
+        var summary = state.subject + ' — ' + state.day + ' a las ' + state.time + ' — ' + state.format + '.';
+        if(line){ line.textContent = summary; }
+        bookingForm.hidden = true;
+        bookingDone.hidden = false;
+        window.scrollTo(0, 0);
+      }).catch(function(){
+        if(errorEl) errorEl.hidden = false;
+      }).finally(function(){
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = originalLabel;
+      });
     });
   }
 
@@ -970,22 +984,51 @@ tbody tr:nth-child(even){background:var(--paper-2)}
   var sendQuestionBtn = document.getElementById('send-question-btn');
   if(sendQuestionBtn){
     sendQuestionBtn.addEventListener('click', function(){
+      var statusEl = document.getElementById('question-status');
       var name = (document.getElementById('q-name') || {}).value || '';
       var contact = (document.getElementById('q-email') || {}).value || '';
       var msg = (document.getElementById('q-msg') || {}).value || '';
 
-      var bodyLines = [
-        'Pregunta desde el sitio web:',
-        '',
-        'Nombre: ' + name,
-        'Para contactarme: ' + contact,
-        '',
-        msg
-      ];
-      var mailto = 'mailto:roblaneii@sbcglobal.net'
-        + '?subject=' + encodeURIComponent('Pregunta de ' + (name || 'el sitio web'))
-        + '&body=' + encodeURIComponent(bodyLines.join('\n'));
-      window.location.href = mailto;
+      var payload = {
+        _subject: 'Pregunta de ' + (name || 'el sitio web'),
+        form: 'Pregunta',
+        name: name,
+        reach_me_at: contact,
+        message: msg
+      };
+
+      sendQuestionBtn.disabled = true;
+      var originalLabel = sendQuestionBtn.textContent;
+      sendQuestionBtn.textContent = 'Enviando…';
+      if(statusEl){ statusEl.hidden = true; statusEl.style.color = ''; }
+
+      fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function(resp){
+        if(!resp.ok) throw new Error('bad status');
+        if(statusEl){
+          statusEl.textContent = 'Gracias — tu mensaje va en camino a Robert.';
+          statusEl.style.color = '#2c7a4b';
+          statusEl.hidden = false;
+        }
+        var nameEl = document.getElementById('q-name');
+        var emailEl = document.getElementById('q-email');
+        var msgEl = document.getElementById('q-msg');
+        if(nameEl) nameEl.value = '';
+        if(emailEl) emailEl.value = '';
+        if(msgEl) msgEl.value = '';
+      }).catch(function(){
+        if(statusEl){
+          statusEl.textContent = 'Hubo un problema al enviar tu mensaje. Llama o envía un mensaje de texto al 469-657-6671.';
+          statusEl.style.color = '#c0392b';
+          statusEl.hidden = false;
+        }
+      }).finally(function(){
+        sendQuestionBtn.disabled = false;
+        sendQuestionBtn.textContent = originalLabel;
+      });
     });
   }
 })();
