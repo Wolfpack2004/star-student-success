@@ -605,6 +605,7 @@ tbody tr:nth-child(even){background:var(--paper-2)}
         <div class="field"><label for="q-email">Email or phone</label><input type="text" id="q-email" placeholder="How should I reach you?"></div>
         <div class="field"><label for="q-msg">What do you want to work on?</label><textarea id="q-msg" placeholder="A sentence or two is plenty."></textarea></div>
         <button class="btn btn--red" type="button" id="send-question-btn">Send the message</button>
+        <p id="question-status" style="font-size:13.5px;margin:12px 0 0" hidden></p>
       </div>
     </div>
   </div>
@@ -684,7 +685,8 @@ tbody tr:nth-child(even){background:var(--paper-2)}
               <div class="summary__row"><span>Format</span><span id="sum-format">In person</span></div>
               <div class="summary__row"><span>Cost</span><span class="unset" id="sum-cost">&mdash;</span></div>
               <button class="btn btn--red" type="button" id="confirm-btn" style="width:100%;margin-top:20px" disabled>Send booking request</button>
-              <p style="font-size:13.5px;color:#A2ABB2;margin:14px 0 0">No payment now. This opens an email to Robert with your request &mdash; he'll call or text to confirm the time.</p>
+              <p style="font-size:13.5px;color:#A2ABB2;margin:14px 0 0">No payment now. This sends your request straight to Robert &mdash; he'll call or text to confirm the time.</p>
+              <p id="booking-error" style="font-size:13.5px;color:#ffb4b4;margin:10px 0 0" hidden>Something went wrong sending that. Please call or text 469-657-6671, or try again.</p>
             </div>
           </aside>
         </div>
@@ -703,7 +705,7 @@ tbody tr:nth-child(even){background:var(--paper-2)}
         </svg>
         <h3>Request sent.</h3>
         <p class="lede" style="margin:0 auto 6px" id="done-line">Session details are on the way.</p>
-        <p class="muted" style="margin-bottom:24px">Your email app should have opened with the request to Robert. If it didn't, call or text 469-657-6671 with the same details.</p>
+        <p class="muted" style="margin-bottom:24px">Your request has been sent to Robert. He'll call or text to confirm the time. If you don't hear back within a day, call or text 469-657-6671.</p>
         <button class="btn btn--ghost" type="button" id="book-again">Book another session</button>
       </div>
     </div>
@@ -918,42 +920,54 @@ tbody tr:nth-child(even){background:var(--paper-2)}
   var bookingForm = document.getElementById('booking-form');
   var bookingDone = document.getElementById('booking-done');
 
+  var FORMSPREE_ENDPOINT = 'https://formspree.io/f/xwlkdegp';
+
   if(confirmBtn && bookingForm && bookingDone){
     confirmBtn.addEventListener('click', function(){
-      var line = document.getElementById('done-line');
-      var summary = state.subject + ' \u2014 ' + state.day + ' at ' + state.time + ' \u2014 ' + state.format + '.';
-      if(line){
-        line.textContent = summary;
-      }
-
+      var errorEl = document.getElementById('booking-error');
       var name = (document.getElementById('b-name') || {}).value || '';
       var phone = (document.getElementById('b-phone') || {}).value || '';
       var email = (document.getElementById('b-email') || {}).value || '';
       var lang = (document.getElementById('b-lang') || {}).value || '';
       var goal = (document.getElementById('b-goal') || {}).value || '';
 
-      var bodyLines = [
-        'Booking request from the website:',
-        '',
-        'Subject: ' + state.subject,
-        'Day: ' + state.day,
-        'Time: ' + state.time,
-        'Format: ' + state.format,
-        '',
-        'Name: ' + name,
-        'Phone: ' + phone,
-        'Email: ' + email,
-        'Preferred language: ' + lang,
-        'Goal: ' + goal
-      ];
-      var mailto = 'mailto:roblaneii@sbcglobal.net'
-        + '?subject=' + encodeURIComponent('Booking request: ' + state.subject + ' \u2014 ' + state.day)
-        + '&body=' + encodeURIComponent(bodyLines.join('\n'));
-      window.location.href = mailto;
+      var payload = {
+        _subject: 'Booking request: ' + state.subject + ' \u2014 ' + state.day,
+        form: 'Booking request',
+        subject: state.subject,
+        day: state.day,
+        time: state.time,
+        format: state.format,
+        name: name,
+        phone: phone,
+        email: email,
+        preferred_language: lang,
+        goal: goal
+      };
 
-      bookingForm.hidden = true;
-      bookingDone.hidden = false;
-      window.scrollTo(0, 0);
+      if(errorEl) errorEl.hidden = true;
+      confirmBtn.disabled = true;
+      var originalLabel = confirmBtn.textContent;
+      confirmBtn.textContent = 'Sending\u2026';
+
+      fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function(resp){
+        if(!resp.ok) throw new Error('bad status');
+        var line = document.getElementById('done-line');
+        var summary = state.subject + ' \u2014 ' + state.day + ' at ' + state.time + ' \u2014 ' + state.format + '.';
+        if(line){ line.textContent = summary; }
+        bookingForm.hidden = true;
+        bookingDone.hidden = false;
+        window.scrollTo(0, 0);
+      }).catch(function(){
+        if(errorEl) errorEl.hidden = false;
+      }).finally(function(){
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = originalLabel;
+      });
     });
   }
 
@@ -969,22 +983,51 @@ tbody tr:nth-child(even){background:var(--paper-2)}
   var sendQuestionBtn = document.getElementById('send-question-btn');
   if(sendQuestionBtn){
     sendQuestionBtn.addEventListener('click', function(){
+      var statusEl = document.getElementById('question-status');
       var name = (document.getElementById('q-name') || {}).value || '';
       var contact = (document.getElementById('q-email') || {}).value || '';
       var msg = (document.getElementById('q-msg') || {}).value || '';
 
-      var bodyLines = [
-        'Question from the website:',
-        '',
-        'Name: ' + name,
-        'Reach me at: ' + contact,
-        '',
-        msg
-      ];
-      var mailto = 'mailto:roblaneii@sbcglobal.net'
-        + '?subject=' + encodeURIComponent('Question from ' + (name || 'the website'))
-        + '&body=' + encodeURIComponent(bodyLines.join('\n'));
-      window.location.href = mailto;
+      var payload = {
+        _subject: 'Question from ' + (name || 'the website'),
+        form: 'Question',
+        name: name,
+        reach_me_at: contact,
+        message: msg
+      };
+
+      sendQuestionBtn.disabled = true;
+      var originalLabel = sendQuestionBtn.textContent;
+      sendQuestionBtn.textContent = 'Sending…';
+      if(statusEl){ statusEl.hidden = true; statusEl.style.color = ''; }
+
+      fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function(resp){
+        if(!resp.ok) throw new Error('bad status');
+        if(statusEl){
+          statusEl.textContent = 'Thanks — your message is on its way to Robert.';
+          statusEl.style.color = '#2c7a4b';
+          statusEl.hidden = false;
+        }
+        var nameEl = document.getElementById('q-name');
+        var emailEl = document.getElementById('q-email');
+        var msgEl = document.getElementById('q-msg');
+        if(nameEl) nameEl.value = '';
+        if(emailEl) emailEl.value = '';
+        if(msgEl) msgEl.value = '';
+      }).catch(function(){
+        if(statusEl){
+          statusEl.textContent = 'Something went wrong sending that. Please call or text 469-657-6671.';
+          statusEl.style.color = '#c0392b';
+          statusEl.hidden = false;
+        }
+      }).finally(function(){
+        sendQuestionBtn.disabled = false;
+        sendQuestionBtn.textContent = originalLabel;
+      });
     });
   }
 })();
